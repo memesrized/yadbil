@@ -1,0 +1,6 @@
+# TODO: add correct vesions
+lxml
+nltk
+numpy
+networkx
+plotly
