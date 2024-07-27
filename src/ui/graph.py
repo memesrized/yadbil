@@ -43,12 +43,15 @@
 
 # TelegramEmbed("https://t.me/durov/242").component()
 
-import streamlit as st
-import networkx as nx
 import json
-from src.graph import find_similar_posts_pagerank  # Adjust the import path as necessary
-from src.st_utils import tg_html
+
+import networkx as nx
+
+import ui.graph as st
 import streamlit.components.v1 as components
+from src.graph import find_similar_posts_pagerank  # Adjust the import path as necessary
+from src.utils.st_utils import tg_html
+from src.graph.io import load_resources
 
 # Configuration Parameters
 GRAPH_FILE_PATH = "data/filtered_graph.graphml"
@@ -61,28 +64,9 @@ DEFAULT_NUM_RECOMMENDATIONS = 5
 MAX_NUM_RECOMMENDATIONS = 20
 
 
-def load_resources():
-    # Load the graph
-    G = nx.read_graphml(GRAPH_FILE_PATH)
-
-    # Convert node attributes back from JSON strings
-    for node, attrs in G.nodes(data=True):
-        for attr_key, attr_value in attrs.items():
-            try:
-                attrs[attr_key] = json.loads(attr_value)
-            except json.JSONDecodeError:
-                pass
-
-    # Load posts and posts_view
-    with open(POSTS_FILE_PATH) as f:
-        posts = json.load(f)
-    with open(POSTS_VIEW_FILE_PATH) as f:
-        posts_view = json.load(f)
-
-    return G, posts, posts_view
-
-
-G, posts, posts_view = load_resources()
+G, posts, posts_view = load_resources(
+    GRAPH_FILE_PATH, POSTS_FILE_PATH, POSTS_VIEW_FILE_PATH
+)
 
 # Streamlit UI layout
 st.title("Post Recommendation System")
