@@ -1,5 +1,5 @@
 # project related paths
-data/
+/data/
 
 # OS related ignore
 .DS_Store
