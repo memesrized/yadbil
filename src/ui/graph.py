@@ -43,11 +43,8 @@
 
 # TelegramEmbed("https://t.me/durov/242").component()
 
-import json
 
-import networkx as nx
-
-import ui.graph as st
+import streamlit as st
 import streamlit.components.v1 as components
 from src.graph import find_similar_posts_pagerank  # Adjust the import path as necessary
 from src.utils.st_utils import tg_html
