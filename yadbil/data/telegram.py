@@ -7,7 +7,7 @@ from nltk.corpus import stopwords
 from nltk.stem import SnowballStemmer
 from stop_words import get_stop_words
 
-from src.data.utils import is_ru, is_word
+from yadbil.data.utils import is_ru, is_word
 
 nltk.download("punkt")
 nltk.download("stopwords")

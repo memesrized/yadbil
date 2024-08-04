@@ -46,9 +46,9 @@
 
 import streamlit as st
 import streamlit.components.v1 as components
-from src.graph import find_similar_posts_pagerank  # Adjust the import path as necessary
-from src.utils.st_utils import tg_html
-from src.graph.io import load_resources
+from yadbil.graph import find_similar_posts_pagerank  # Adjust the import path as necessary
+from yadbil.utils.st_utils import tg_html
+from yadbil.graph.io import load_resources
 
 # Configuration Parameters
 GRAPH_FILE_PATH = "data/filtered_graph.graphml"
