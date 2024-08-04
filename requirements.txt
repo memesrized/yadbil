@@ -1,6 +1,10 @@
 # TODO: add correct vesions
-lxml
-nltk
-numpy
-networkx
-plotly
+lxml==5.2.2
+nltk==3.8.1
+numpy==1.26.2
+networkx==3.2.1
+plotly==5.18.0
+streamlit==1.36.0
+ipython==8.17.2
+
+-e .
