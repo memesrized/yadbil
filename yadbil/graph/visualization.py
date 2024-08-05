@@ -5,9 +5,7 @@ import plotly.graph_objects as go
 def get_graph_plot(G_filtered, idf_scores):
     def get_top_idf_words(words, idf_scores, top_n=5):
         """Returns the top N words with the highest IDF scores."""
-        sorted_words = sorted(
-            words, key=lambda word: idf_scores.get(word, 0), reverse=True
-        )
+        sorted_words = sorted(words, key=lambda word: idf_scores.get(word, 0), reverse=True)
         return sorted_words[:top_n]
 
     hover_data = []
@@ -38,14 +36,14 @@ def get_graph_plot(G_filtered, idf_scores):
                 x=edge_x,
                 y=edge_y,
                 mode="lines",
-                line=dict(width=0.5, color="#888"),  # Customize edge appearance
+                line={"width": 0.5, "color": "#888"},  # Customize edge appearance
                 hoverinfo="none",  # No hover info for edges
             ),
             go.Scatter(
                 x=node_x,
                 y=node_y,
                 mode="markers",
-                marker=dict(size=10, color="skyblue"),  # Customize node appearance
+                marker={"size": 10, "color":"skyblue"},  # Customize node appearance
                 text=hover_data,
                 hoverinfo="text",  # Display hover data
             ),
@@ -54,8 +52,8 @@ def get_graph_plot(G_filtered, idf_scores):
             title="Interactive Post Similarity Graph",
             showlegend=False,
             hovermode="closest",  # Show hover data on closest node
-            xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
-            yaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+            xaxis={"showgrid": False, "zeroline": False, "showticklabels": False},
+            yaxis={"showgrid": False, "zeroline": False, "showticklabels": False},
         ),
     )
     return fig
