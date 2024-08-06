@@ -5,6 +5,7 @@ from typing import Any, Dict, List, Tuple
 import nltk
 from nltk.corpus import stopwords
 from nltk.stem import SnowballStemmer
+
 from stop_words import get_stop_words
 
 from yadbil.data.utils import is_ru, is_word
