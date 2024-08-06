@@ -43,7 +43,7 @@ def get_graph_plot(G_filtered, idf_scores):
                 x=node_x,
                 y=node_y,
                 mode="markers",
-                marker={"size": 10, "color":"skyblue"},  # Customize node appearance
+                marker={"size": 10, "color": "skyblue"},  # Customize node appearance
                 text=hover_data,
                 hoverinfo="text",  # Display hover data
             ),
