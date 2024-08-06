@@ -38,7 +38,7 @@ license = { file = "LICENSE" }
 # Tools
 
 [tool.ruff]
-include = ["*.ipynb"]
+extend-include = ["*.ipynb"]
 indent-width = 4
 line-length = 119
 
