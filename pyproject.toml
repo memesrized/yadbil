@@ -1,0 +1,66 @@
+# Installation 
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["yadbil"]
+
+# Project
+
+[project]
+name = "yadbil"
+version = "0.0.1"
+# TODO: add optional deps for dev
+dependencies = [
+    "lxml==5.2.2",
+    "nltk==3.8.1",
+    "numpy==1.26.2",
+    "networkx==3.2.1",
+    "plotly==5.18.0",
+    "streamlit==1.36.0",
+    "ipython==8.17.2",
+    "ruff==0.5.6",
+    "pre-commit=3.8.0",
+]
+requires-python = ">=3.9"
+authors = [
+    { name = "Vasilii Salikov", email = "vasilii.salikov.work@gmail.com" },
+]
+maintainers = [
+    { name = "Vasilii Salikov", email = "vasilii.salikov.work@gmail.com" },
+]
+description = "Yet another database in learning"
+readme = "README.md"
+license = { file = "LICENSE" }
+
+# Tools
+
+[tool.ruff]
+extend-include = ["*.ipynb"]
+indent-width = 4
+line-length = 119
+
+[tool.ruff.format]
+indent-style = "space"
+line-ending = "lf"
+quote-style = "double"
+skip-magic-trailing-comma = false
+
+
+[tool.ruff.lint]
+# `C901` - complexity check
+# `E501` (line length violations)
+# `E741` - Checks for the use of 'l', 'O', or 'I' as var names.
+ignore = ["C901", "E501", "E741"]
+select = ["C", "E", "F", "I", "W"]
+
+[tool.ruff.lint.isort]
+lines-after-imports = 2
+known-first-party = ["yadbil"]
+
+[tool.ruff.lint.per-file-ignores]
+# `F401` -  unused import
+# `E402` - 	Module level import not at top of cell
+"__init__.py" = ["F401", "E402"]

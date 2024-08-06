@@ -1,7 +1,6 @@
-import networkx as nx
+from typing import Any, Dict, List
 
 import networkx as nx
-from typing import List, Dict, Any
 
 
 class GraphProcessor:
@@ -40,9 +39,7 @@ class GraphProcessor:
             for post2 in self.posts[i + 1 :]:
                 common_words = set(post1[self.words_key]) & set(post2[self.words_key])
                 if common_words:
-                    edge_weight = sum(
-                        self.idf_scores.get(word, 0) for word in common_words
-                    )
+                    edge_weight = sum(self.idf_scores.get(word, 0) for word in common_words)
                     G.add_edge(post1["id"], post2["id"], weight=edge_weight)
 
         return G
@@ -67,9 +64,7 @@ class GraphProcessor:
                       and nodes connected by these edges.
         """
         G_filtered = nx.Graph()
-        G_filtered.add_nodes_from(
-            self.G.nodes(data=True)
-        )  # Add all nodes to the new graph
+        G_filtered.add_nodes_from(self.G.nodes(data=True))  # Add all nodes to the new graph
 
         for u, v, data in self.G.edges(data=True):
             if data["weight"] >= threshold:

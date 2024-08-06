@@ -2,6 +2,7 @@ import json
 
 import networkx as nx
 
+
 def load_resources(graph_path, posts_path, posts_view_path):
     # Load the graph
     G = nx.read_graphml(graph_path)

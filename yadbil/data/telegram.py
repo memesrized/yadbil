@@ -7,7 +7,8 @@ from nltk.corpus import stopwords
 from nltk.stem import SnowballStemmer
 from stop_words import get_stop_words
 
-from src.data.utils import is_ru, is_word
+from yadbil.data.utils import is_ru, is_word
+
 
 nltk.download("punkt")
 nltk.download("stopwords")
@@ -45,9 +46,7 @@ class TelegramDataProcessor:
     # TODO: add len truncation
     def _keep_only_text_posts(self) -> None:
         """Filters out posts that do not contain text from the loaded data."""
-        self.data["messages"] = [
-            msg for msg in self.data["messages"] if "text" in msg and msg["text"]
-        ]
+        self.data["messages"] = [msg for msg in self.data["messages"] if "text" in msg and msg["text"]]
         print("Messages with text:", len(self.data["messages"]))
 
     @staticmethod
@@ -65,18 +64,14 @@ class TelegramDataProcessor:
             return text[: match.start(1)], match.group(1), text[match.end(1) :]
         return "", text, ""
 
-    def _process_entity(
-        self, entity: Dict[str, Any], parsed_message: Dict[str, Any]
-    ) -> None:
+    def _process_entity(self, entity: Dict[str, Any], parsed_message: Dict[str, Any]) -> None:
         """Processes a single entity from a Telegram message.
 
         Args:
             entity (Dict[str, Any]): The entity to process.
             parsed_message (Dict[str, Any]): The dictionary to store the parsed message data.
         """
-        start_space, text_no_space, end_space = self._extract_boundary_spaces(
-            entity["text"]
-        )
+        start_space, text_no_space, end_space = self._extract_boundary_spaces(entity["text"])
         parsed_message["text"] += entity["text"]
 
         if entity["type"] == "bold":
@@ -124,9 +119,7 @@ class TelegramDataProcessor:
         return parsed_message
 
     @staticmethod
-    def preprocess_text(
-        text: str, languages: Tuple[str, str] = ("russian", "english")
-    ) -> Dict[str, Any]:
+    def preprocess_text(text: str, languages: Tuple[str, str] = ("russian", "english")) -> Dict[str, Any]:
         """Preprocesses text data for graph-based recommendation system.
 
         Args:
@@ -148,10 +141,7 @@ class TelegramDataProcessor:
 
         stemmer = {language: SnowballStemmer(language) for language in languages}
         stemmed_dict = {word: stemmer[is_ru(word)].stem(word) for word in words}
-        stemmed_to_orig_dict = {
-            v: [kk for kk, vv in stemmed_dict.items() if vv == v]
-            for v in stemmed_dict.values()
-        }
+        stemmed_to_orig_dict = {v: [kk for kk, vv in stemmed_dict.items() if vv == v] for v in stemmed_dict.values()}
         stemmed_words = {stemmer[is_ru(word)].stem(word) for word in words}
 
         return {
@@ -181,9 +171,6 @@ class TelegramDataProcessor:
         """
         self._keep_only_text_posts()
         self.posts = [self._parse_telegram_message(msg) for msg in self.data["messages"]]
-        self.posts = [
-            {**post, **self.preprocess_text(post["text_no_links"])}
-            for post in self.posts
-        ]
+        self.posts = [{**post, **self.preprocess_text(post["text_no_links"])} for post in self.posts]
         self.posts_view = self._generate_posts_view()
         return self
