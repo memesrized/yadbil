@@ -5,7 +5,6 @@ from typing import Any, Dict, List, Tuple
 import nltk
 from nltk.corpus import stopwords
 from nltk.stem import SnowballStemmer
-
 from stop_words import get_stop_words
 
 from yadbil.data.utils import is_ru, is_word
@@ -26,7 +25,9 @@ class TelegramDataProcessor:
         self.input_data = input_data
         self.data = self._load_data()
         self.posts: List[Dict[str, Any]] = []
-        self.posts_view: Dict[str, Dict[int, Dict[str, Any]]] = {}
+        self.posts_view: Dict[str, Dict[int, Dict[str, Any]]] = {
+
+        }
 
     def _load_data(self) -> Dict[str, Any]:
         """Loads JSON data from the input file.
