@@ -25,9 +25,7 @@ class TelegramDataProcessor:
         self.input_data = input_data
         self.data = self._load_data()
         self.posts: List[Dict[str, Any]] = []
-        self.posts_view: Dict[str, Dict[int, Dict[str, Any]]] = {
-
-        }
+        self.posts_view: Dict[str, Dict[int, Dict[str, Any]]] = {}
 
     def _load_data(self) -> Dict[str, Any]:
         """Loads JSON data from the input file.
