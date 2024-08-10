@@ -20,6 +20,7 @@ dependencies = [
     "networkx==3.2.1",
     "plotly==5.18.0",
     "streamlit==1.36.0",
+    "stop-words==2018.7.23",
     "ipython==8.17.2",
     "ruff==0.5.6",
     "pre-commit==3.8.0",
