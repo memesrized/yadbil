@@ -3,11 +3,8 @@ import re
 from typing import Any, Dict, List, Tuple
 
 import nltk
-from nltk.corpus import stopwords
-from nltk.stem import SnowballStemmer
-from stop_words import get_stop_words
 
-from yadbil.data.utils import is_ru, is_word
+from yadbil.data.text.processing import TextPreprocessor
 
 
 nltk.download("punkt")
@@ -15,8 +12,14 @@ nltk.download("stopwords")
 
 
 # TODO: log instead of print
+# TODO: text_processing_params as Pydantic model
 class TelegramDataProcessor:
-    def __init__(self, input_data: str):
+    def __init__(
+        self,
+        input_data: str,
+        min_words_in_post: int = 5,
+        text_processing_params: dict = None,
+    ):
         """Initializes the TelegramDataProcessor with the path to the input data file.
 
         Args:
@@ -26,6 +29,10 @@ class TelegramDataProcessor:
         self.data = self._load_data()
         self.posts: List[Dict[str, Any]] = []
         self.posts_view: Dict[str, Dict[int, Dict[str, Any]]] = {}
+        self._post_lengh = min_words_in_post
+
+        text_processing_params = text_processing_params or {}
+        self.text_processor = TextPreprocessor(**text_processing_params)
 
     def _load_data(self) -> Dict[str, Any]:
         """Loads JSON data from the input file.
@@ -118,38 +125,6 @@ class TelegramDataProcessor:
 
         return parsed_message
 
-    @staticmethod
-    def preprocess_text(text: str, languages: Tuple[str, str] = ("russian", "english")) -> Dict[str, Any]:
-        """Preprocesses text data for graph-based recommendation system.
-
-        Args:
-            text (str): The input text.
-            languages (tuple): Tuple of languages in the text. Defaults to ('russian', 'english').
-
-        Returns:
-            dict: A dictionary with preprocessed words, words-to-stemmed mapping, and stemmed-to-words mapping.
-        """
-        text = text.lower()
-        words = nltk.word_tokenize(text)
-        words = [word for word in words if is_word(word)]
-
-        stop_words = set()
-        for language in languages:
-            stop_words.update(get_stop_words(language))
-            stop_words.update(stopwords.words(language))
-        words = [word for word in words if word not in stop_words]
-
-        stemmer = {language: SnowballStemmer(language) for language in languages}
-        stemmed_dict = {word: stemmer[is_ru(word)].stem(word) for word in words}
-        stemmed_to_orig_dict = {v: [kk for kk, vv in stemmed_dict.items() if vv == v] for v in stemmed_dict.values()}
-        stemmed_words = {stemmer[is_ru(word)].stem(word) for word in words}
-
-        return {
-            "stemmed_words": list(stemmed_words),
-            "words_to_stemmed": stemmed_dict,
-            "stemmed_to_words": stemmed_to_orig_dict,
-        }
-
     def _generate_posts_view(self) -> Dict[str, Dict[int, Dict[str, Any]]]:
         """Generates a view of posts organized by channel ID.
 
@@ -171,6 +146,8 @@ class TelegramDataProcessor:
         """
         self._keep_only_text_posts()
         self.posts = [self._parse_telegram_message(msg) for msg in self.data["messages"]]
-        self.posts = [{**post, **self.preprocess_text(post["text_no_links"])} for post in self.posts]
+        self.posts = [{**post, **self.text_processor.preprocess(post["text_no_links"])} for post in self.posts]
+        self.posts = [x for x in self.posts if len(x["words"]) >= self._post_lengh]
         self.posts_view = self._generate_posts_view()
+        print("Final length:", len(self.posts))
         return self
