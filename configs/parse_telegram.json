@@ -1,0 +1,23 @@
+{
+    "channels": [
+        "ai_newz",
+        "lovedeathtransformers",
+        "new_yorko_times",
+        "partially_unsupervised",
+        "fminxyz",
+        "epsiloncorrect",
+        "knowledge_accumulator",
+        "rybolos_channel",
+        "gonzo_ML",
+        "seeallochnaya",
+        "senior_augur",
+        "ai_machinelearning_big_data",
+        "opendatascience",
+        "tagir_analyzes"
+    ],
+    "params": {
+        "batch_size": 200,
+        "retry_limit": 5,
+        "output_dir": "data/tg_data/"
+    }
+}
