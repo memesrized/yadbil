@@ -18,6 +18,8 @@
     "params": {
         "batch_size": 200,
         "retry_limit": 5,
-        "output_dir": "data/tg_data/"
+        "output_dir": "data/tg_data/channels",
+        "channels_info_output_dir": "data/tg_data/",
+        "cleaned_data_output_dir": "data/tg_data/clean"
     }
 }

@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+from pathlib import Path
 
 from dotenv import load_dotenv
 
@@ -22,7 +23,9 @@ class Config:
         self._config = self._config["params"]
         self.batch_size = self._config.get("batch_size", 100)
         self.retry_limit = self._config.get("retry_limit", 3)
-        self.output_dir = self._config.get("output_dir", "./tg_data/")
+        self.output_dir = Path(self._config.get("output_dir", "./tg_data/"))
+        self.channels_info_output_dir = Path(self._config.get("channels_info_output_dir", "./"))
+        self.cleaned_data_output_dir = Path(self._config.get("cleaned_data_output_dir", "./tg_data/"))
         self.verbose = self._config.get("verbose", True)
 
         if self.verbose:
