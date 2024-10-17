@@ -13,7 +13,8 @@
         "senior_augur",
         "ai_machinelearning_big_data",
         "opendatascience",
-        "tagir_analyzes"
+        "tagir_analyzes",
+        "abstractDL"
     ],
     "params": {
         "batch_size": 200,
