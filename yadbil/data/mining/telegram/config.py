@@ -11,21 +11,27 @@ logger = logging.getLogger(__name__)
 
 
 # TODO: rework
-class Config:
+class TelegramParserConfig:
     def __init__(self):
         load_dotenv()
         self.api_id = os.getenv("API_ID")
         self.api_hash = os.getenv("API_HASH")
         self.phone_number = os.getenv("PHONE_NUMBER")
 
+        # mandatory parameters
         self._config = self.load_config(os.getenv("TG_PARSING_CONFIG_PATH"))
         self.channels = self._config["channels"]
         self._config = self._config["params"]
-        self.batch_size = self._config.get("batch_size", 100)
-        self.retry_limit = self._config.get("retry_limit", 3)
+
+        # save intermediate data to file
+        self.save_to_disk = self._config.get("save_to_disk", True)
         self.output_dir = Path(self._config.get("output_dir", "./tg_data/"))
         self.channels_info_output_dir = Path(self._config.get("channels_info_output_dir", "./"))
         self.cleaned_data_output_dir = Path(self._config.get("cleaned_data_output_dir", "./tg_data/"))
+
+        # processing parameters
+        self.batch_size = self._config.get("batch_size", 100)
+        self.retry_limit = self._config.get("retry_limit", 3)
         self.verbose = self._config.get("verbose", True)
 
         if self.verbose:

@@ -14,7 +14,7 @@ from telethon.tl.types import (
     User,
 )
 
-from yadbil.data.source.telegram.scraping.config import Config
+from yadbil.data.mining.telegram.config import TelegramParserConfig
 
 
 load_dotenv()
@@ -100,10 +100,9 @@ class TelegramInfoFetcher:
 
 
 async def main():
-    config = Config()
+    config = TelegramParserConfig()
     res = []
     async with TelegramInfoFetcher() as fetcher:
-        # Example usage with different types of identifiers
         identifiers = ["@" + x for x in config.channels]
 
         for identifier in identifiers:

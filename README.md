@@ -1,5 +1,5 @@
 # yadbil
-Yet another database in learning
+Yet Another DataBase for Intelligent Lookup
 
 1. pip install -e .
 2. pre-commit install
