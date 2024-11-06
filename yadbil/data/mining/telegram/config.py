@@ -12,14 +12,11 @@ logger = logging.getLogger(__name__)
 
 # TODO: rework
 class TelegramParserConfig:
-    def __init__(self):
+    def __init__(self, config_path=None):
         load_dotenv()
-        self.api_id = os.getenv("API_ID")
-        self.api_hash = os.getenv("API_HASH")
-        self.phone_number = os.getenv("PHONE_NUMBER")
 
         # mandatory parameters
-        self._config = self.load_config(os.getenv("TG_PARSING_CONFIG_PATH"))
+        self._config = config_path or self.load_config(os.getenv("TG_PARSING_CONFIG_PATH"))
         self.channels = self._config["channels"]
         self._config = self._config["params"]
 
@@ -43,9 +40,6 @@ class TelegramParserConfig:
 
     def log_parameters(self):
         logger.info("Configuration parameters:")
-        logger.info(f"API ID: {self.api_id}")
-        logger.info(f"API Hash: {'*' * len(self.api_hash)}")  # Mask the API hash for security
-        logger.info(f"Phone Number: {self.phone_number}")
         logger.info(f"Channels: {self.channels}")
         logger.info(f"Batch Size: {self.batch_size}")
         logger.info(f"Retry Limit: {self.retry_limit}")

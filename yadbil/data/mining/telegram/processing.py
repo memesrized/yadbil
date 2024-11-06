@@ -1,17 +1,20 @@
 import json
 from collections import defaultdict
+from pathlib import Path
 
 from tqdm import tqdm
 
-from yadbil.data.mining.telegram.config import TelegramParserConfig
-
 
 class TelegramDataProcessor:
-    def __init__(self):
-        self.config = TelegramParserConfig()
-        with open(self.config.channels_info_output_dir / "channels_meta.json") as file:
-            self.channels = [ch["id"] for ch in json.load(file)]
-        self.config.cleaned_data_output_dir.mkdir(parents=True, exist_ok=True)
+    def __init__(
+        self,
+        input_dir: Path,
+        output_dir: Path,
+        channels_info_dir: Path,
+    ):
+        self.channels_info_path = channels_info_dir / "channels_meta.json"
+        self.output_dir = output_dir
+        self.input_dir = input_dir
 
     def sub_urls(self, data):
         text = data["message"]
@@ -51,30 +54,40 @@ class TelegramDataProcessor:
         }
 
     def run(self):
+        with open(self.channels_info_path) as file:
+            self.channels = [ch["id"] for ch in json.load(file)]
+        self.output_dir.mkdir(parents=True, exist_ok=True)
+
         results = []
-        for chl in tqdm(list(self.config.output_dir.glob("*"))):
+        for chl in tqdm(list(self.input_dir.glob("*"))):
             with open(chl) as file:
-                (self.config.cleaned_data_output_dir / "channels").mkdir(exist_ok=True, parents=True)
-                with open(self.config.cleaned_data_output_dir / "channels" / chl.name, "w") as file_out:
+                (self.output_dir / "channels").mkdir(exist_ok=True, parents=True)
+                with open(self.output_dir / "channels" / chl.name, "w") as file_out:
                     for line in tqdm(file):
                         line = json.loads(line)
                         if self.keep_or_not(line):
                             try:
                                 res = self.process_record(line, chl.stem)
                                 results.append(res)
-
                                 file_out.write(json.dumps(res, ensure_ascii=False))
                                 file_out.write("\n")
                             except Exception as e:
                                 print(e)
                                 print(line)
                                 raise e
-        with open(self.config.cleaned_data_output_dir / "all_channels.jsonl", "w") as file:
+        with open(self.output_dir / "all_channels.jsonl", "w") as file:
             for result in results:
                 file.write(json.dumps(result, ensure_ascii=False))
                 file.write("\n")
 
 
 if __name__ == "__main__":
-    processor = TelegramDataProcessor()
+    from yadbil.data.mining.telegram.config import TelegramParserConfig
+
+    config = TelegramParserConfig()
+    processor = TelegramDataProcessor(
+        channels_info_dir=config.channels_info_output_dir,
+        output_dir=config.cleaned_data_output_dir,
+        input_dir=config.output_dir,
+    )
     processor.run()

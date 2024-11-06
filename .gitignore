@@ -1,5 +1,6 @@
 # project related paths
 /data/
+session.session
 
 # OS related ignore
 .DS_Store
