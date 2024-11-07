@@ -1,16 +1,14 @@
 import argparse
-import logging
 import sys
 import traceback
 from pathlib import Path
 from typing import Optional
 
 from yadbil.pipeline.pipeline import Pipeline
+from yadbil.utils.logger import get_logger
 
 
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(pathname)s - %(funcName)s - %(message)s"
-)
+logger = get_logger(__name__)
 
 
 def parse_args(args: Optional[list[str]] = None) -> argparse.Namespace:
@@ -40,7 +38,7 @@ def main(args: Optional[list[str]] = None) -> int:
         pipeline.run()
         return 0
     except Exception as e:
-        logging.error(f"Error: {e}")
+        logger.error(f"Error: {e}")
         traceback.print_exc()
         return 1
 

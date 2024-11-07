@@ -1,5 +1,4 @@
 import asyncio
-import logging
 import time
 from pathlib import Path
 
@@ -12,16 +11,13 @@ from yadbil.data.mining.telegram.utils.telegram_client import (
     TelegramMessageFetcher,
     TelegramMessageFetcherSync,
 )
+from yadbil.utils.logger import get_logger
 
 
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(pathname)s - %(funcName)s - %(message)s"
-)
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class TelegramScraper(TelegramAsync):
-    # TODO: set proper defaults
     def __init__(
         self,
         creds,
@@ -43,12 +39,10 @@ class TelegramScraper(TelegramAsync):
             message_batch = []
             message_count = 0
             pbar = tqdm(desc=f"Processing {channel}", unit=" messages")
-            # results = []
 
             async for message in parser.iter_channel_messages(channel):
                 processed_message = MessageProcessor(message).process()
                 message_batch.append(processed_message)
-                # results.append(processed_message)
                 message_count += 1
                 pbar.update(1)
 
@@ -62,13 +56,9 @@ class TelegramScraper(TelegramAsync):
 
             pbar.close()
             logger.info(f"Processed {message_count} messages from {channel}")
-            logger.info(f"Output folder: {self.output_dir}")
-
-            # return channel, results
-
+            logger.info(f"Output folder: {self.output_dir / channel}")
         except Exception as e:
             logger.error(f"Error processing messages from channel {channel}: {str(e)}")
-            # return []
 
     async def retry_process_channel(self, parser: TelegramMessageFetcher, channel: str) -> dict:
         retries = 0
@@ -94,8 +84,6 @@ class TelegramScraper(TelegramAsync):
             tasks = [self.retry_process_channel(parser, channel) for channel in self.channels]
             # TODO: return results optionally
             await asyncio.gather(*tasks)
-            # results = await asyncio.gather(*tasks)
-            # return dict(results)
 
 
 class TelegramScraperSync:
@@ -136,7 +124,7 @@ class TelegramScraperSync:
 
             pbar.close()
             logger.info(f"Processed {message_count} messages from {channel}")
-            logger.info(f"Output folder: {self.output_dir}")
+            logger.info(f"Output folder: {self.output_dir / channel}")
 
         except Exception as e:
             logger.error(f"Error processing messages from channel {channel}: {str(e)}")

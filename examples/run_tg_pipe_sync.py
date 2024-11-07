@@ -12,19 +12,19 @@ config = PipelineConfig()
 pipe = Pipeline(
     [
         TelegramChannelInfoParserSync(
-            channels=config["TelegramChannelInfoParser"].channels,
-            output_dir=config["TelegramChannelInfoParser"].channels_info_output_dir,
+            channels=config["TelegramChannelInfoParser"]["channels"],
+            output_dir=config["TelegramChannelInfoParser"]["output_dir"],
             creds=creds,
         ),
         TelegramScraperSync(
             creds=creds,
-            channels=config["TelegramScraper"].channels,
-            output_dir=config["TelegramScraper"].output_dir,
+            channels=config["TelegramScraper"]["channels"],
+            output_dir=config["TelegramScraper"]["output_dir"],
         ),
         TelegramDataProcessor(
-            channels_info_dir=config["TelegramDataProcessor"].channels_info_output_dir,
-            output_dir=config["TelegramDataProcessor"].cleaned_data_output_dir,
-            input_dir=config["TelegramDataProcessor"].output_dir,
+            channels_info_dir=config["TelegramDataProcessor"]["channels_info_dir"],
+            output_dir=config["TelegramDataProcessor"]["output_dir"],
+            input_dir=config["TelegramDataProcessor"]["input_dir"],
         ),
     ]
 )

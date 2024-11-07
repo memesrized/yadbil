@@ -4,6 +4,11 @@ from pathlib import Path
 
 from tqdm import tqdm
 
+from yadbil.utils.logger import get_logger
+
+
+logger = get_logger(__name__)
+
 
 class TelegramDataProcessor:
     def __init__(
@@ -55,12 +60,13 @@ class TelegramDataProcessor:
         }
 
     def run(self):
+        logger.info("Loading channels info")
         with open(self.channels_info_path) as file:
             self.channels = [ch["id"] for ch in json.load(file)]
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
         results = []
-        for chl in tqdm(list(self.input_dir.glob("*"))):
+        for chl in tqdm(list(self.input_dir.glob("*")), desc="Processing channels"):
             with open(chl) as file:
                 (self.output_dir / "channels").mkdir(exist_ok=True, parents=True)
                 with open(self.output_dir / "channels" / chl.name, "w") as file_out:
@@ -76,10 +82,13 @@ class TelegramDataProcessor:
                                 print(e)
                                 print(line)
                                 raise e
+        logger.info("Finished processing")
+        logger.info(f"Saving all_channels.jsonl at {self.output_dir}")
         with open(self.output_dir / "all_channels.jsonl", "w") as file:
             for result in results:
                 file.write(json.dumps(result, ensure_ascii=False))
                 file.write("\n")
+        logger.info("Saved all_channels.jsonl")
 
 
 if __name__ == "__main__":
