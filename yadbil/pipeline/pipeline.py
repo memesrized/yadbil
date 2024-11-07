@@ -1,8 +1,8 @@
-import json
 from pathlib import Path
 from typing import Callable, List, Union
 
-import yaml
+from yadbil.pipeline.config import PipelineConfig
+from yadbil.pipeline.utils import CREDS_MAPPING, STEPS_MAPPING
 
 
 class Pipeline:
@@ -17,20 +17,17 @@ class Pipeline:
                 data = step.run()
         return data
 
-    def from_config(self, config: Union[str, dict, Path]):
-        raise NotImplementedError
-        config = self.load_config(config)
-
-    def load_config(self, config: Union[str, dict, Path]):
-        if isinstance(config, dict):
-            return config
-        if isinstance(config, str):
-            config = Path(config)
-
-        if config.suffix == ".json":
-            with open(config, "r") as f:
-                config = json.load(f)
-        elif config.suffix == ".yaml":
-            with open(config, "r") as f:
-                config = yaml.safe_load(f)
-        return config
+    @classmethod
+    def from_config(cls, config: Union[str, dict, Path]):
+        config = PipelineConfig(config)
+        steps = []
+        for x in config.order:
+            if x in STEPS_MAPPING:
+                step_cls = STEPS_MAPPING[x]
+                config_cls = config[x]
+                if "creds" in config_cls:
+                    config_cls["creds"] = CREDS_MAPPING[config_cls["creds"]]()
+                    steps.append(step_cls(**config_cls))
+            else:
+                raise ValueError(f"Unknown step: {x}")
+        return cls(steps)

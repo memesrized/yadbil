@@ -12,9 +12,10 @@ class TelegramDataProcessor:
         output_dir: Path,
         channels_info_dir: Path,
     ):
+        channels_info_dir = Path(channels_info_dir) if isinstance(channels_info_dir, str) else channels_info_dir
         self.channels_info_path = channels_info_dir / "channels_meta.json"
-        self.output_dir = output_dir
-        self.input_dir = input_dir
+        self.output_dir = Path(output_dir) if isinstance(output_dir, str) else output_dir
+        self.input_dir = Path(input_dir) if isinstance(input_dir, str) else input_dir
 
     def sub_urls(self, data):
         text = data["message"]
@@ -82,12 +83,10 @@ class TelegramDataProcessor:
 
 
 if __name__ == "__main__":
-    from yadbil.data.mining.telegram.config import TelegramParserConfig
+    from yadbil.pipeline.config import PipelineConfig
 
-    config = TelegramParserConfig()
+    config = PipelineConfig()
     processor = TelegramDataProcessor(
-        channels_info_dir=config.channels_info_output_dir,
-        output_dir=config.cleaned_data_output_dir,
-        input_dir=config.output_dir,
+        **config["TelegramDataProcessor"],
     )
     processor.run()

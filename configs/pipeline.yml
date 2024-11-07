@@ -1,0 +1,52 @@
+- name: TelegramChannelInfoParser
+  parameters:
+    creds: TelegramCreds
+    channels: [
+        "ai_newz",
+        "lovedeathtransformers",
+        "new_yorko_times",
+        "partially_unsupervised",
+        "fminxyz",
+        "epsiloncorrect",
+        "knowledge_accumulator",
+        "rybolos_channel",
+        "gonzo_ML",
+        "seeallochnaya",
+        "senior_augur",
+        "ai_machinelearning_big_data",
+        "opendatascience",
+        "tagir_analyzes",
+        "abstractDL"
+    ]
+    output_dir: "data/tg_data/meta"
+  
+- name: TelegramScraper
+  parameters:
+    creds: TelegramCreds
+    channels: [
+        "ai_newz",
+        "lovedeathtransformers",
+        "new_yorko_times",
+        "partially_unsupervised",
+        "fminxyz",
+        "epsiloncorrect",
+        "knowledge_accumulator",
+        "rybolos_channel",
+        "gonzo_ML",
+        "seeallochnaya",
+        "senior_augur",
+        "ai_machinelearning_big_data",
+        "opendatascience",
+        "tagir_analyzes",
+        "abstractDL"
+    ]
+    output_dir: "data/tg_data/channels"
+    save_to_disk: true
+    batch_size: 200
+    retry_limit: 5
+
+- name: TelegramDataProcessor
+  parameters:
+    channels_info_dir: "data/tg_data/meta"
+    output_dir: "data/tg_data/clean"
+    input_dir: "data/tg_data/channels"

@@ -1,5 +1,6 @@
 import asyncio
 import json
+from pathlib import Path
 
 from yadbil.data.mining.telegram.utils.base import TelegramAsync
 from yadbil.data.mining.telegram.utils.telegram_client import (
@@ -11,7 +12,7 @@ from yadbil.data.mining.telegram.utils.telegram_client import (
 class TelegramChannelInfoParser(TelegramAsync):
     def __init__(self, channels, output_dir, creds):
         self.channels = channels
-        self.output_dir = output_dir
+        self.output_dir = Path(output_dir) if isinstance(output_dir, str) else output_dir
         self.res = []
         self.creds = creds
 
@@ -27,14 +28,11 @@ class TelegramChannelInfoParser(TelegramAsync):
         with open(self.output_dir / "channels_meta.json", "w") as file:
             json.dump(self.res, file, ensure_ascii=False, indent=4)
 
-    # def run(self):
-    #     asyncio.run(self._run())
-
 
 class TelegramChannelInfoParserSync:
     def __init__(self, channels, output_dir, creds):
         self.channels = channels
-        self.output_dir = output_dir
+        self.output_dir = Path(output_dir) if isinstance(output_dir, str) else output_dir
         self.res = []
         self.creds = creds
 
@@ -51,14 +49,13 @@ class TelegramChannelInfoParserSync:
 
 
 if __name__ == "__main__":
-    from yadbil.data.mining.telegram.config import TelegramParserConfig
+    from yadbil.pipeline.config import PipelineConfig
     from yadbil.pipeline.creds import TelegramCreds
 
-    config = TelegramParserConfig()
+    config = PipelineConfig()
     creds = TelegramCreds()
     fetcher = TelegramChannelInfoParser(
-        channels=config.channels,
-        output_dir=config.channels_info_output_dir,
+        **config["TelegramChannelInfoParser"],
         creds=creds,
     )
     fetcher.run()

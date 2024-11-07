@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import time
+from pathlib import Path
 
 from tqdm import tqdm
 
@@ -13,7 +14,9 @@ from yadbil.data.mining.telegram.utils.telegram_client import (
 )
 
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(pathname)s - %(funcName)s - %(message)s"
+)
 logger = logging.getLogger(__name__)
 
 
@@ -22,8 +25,8 @@ class TelegramScraper(TelegramAsync):
     def __init__(
         self,
         creds,
-        channels=None,
-        output_dir=None,
+        channels,
+        output_dir,
         save_to_disk=True,
         batch_size=100,
         retry_limit=3,
@@ -32,7 +35,7 @@ class TelegramScraper(TelegramAsync):
         self.channels = channels or []
         self.save_to_disk = save_to_disk
         self.batch_size = batch_size
-        self.output_dir = output_dir
+        self.output_dir = Path(output_dir) if isinstance(output_dir, str) else output_dir
         self.retry_limit = retry_limit
 
     async def process_channel(self, parser: TelegramMessageFetcher, channel: str) -> dict:
@@ -94,9 +97,6 @@ class TelegramScraper(TelegramAsync):
             # results = await asyncio.gather(*tasks)
             # return dict(results)
 
-    # def run(self) -> None:
-    #     asyncio.run(self._run())
-
 
 class TelegramScraperSync:
     def __init__(
@@ -112,7 +112,7 @@ class TelegramScraperSync:
         self.channels = channels or []
         self.save_to_disk = save_to_disk
         self.batch_size = batch_size
-        self.output_dir = output_dir
+        self.output_dir = Path(output_dir) if isinstance(output_dir, str) else output_dir
         self.retry_limit = retry_limit
 
     def process_channel(self, parser: TelegramMessageFetcherSync, channel: str) -> dict:
@@ -167,19 +167,11 @@ class TelegramScraperSync:
 
 
 if __name__ == "__main__":
-    from yadbil.data.mining.telegram.config import TelegramParserConfig
+    from yadbil.pipeline.config import PipelineConfig
     from yadbil.pipeline.creds import TelegramCreds
 
-    config = TelegramParserConfig()
+    config = PipelineConfig()
     creds = TelegramCreds()
-    scraper = TelegramScraper(
-        creds=creds,
-        channels=config.channels,
-        save_to_disk=config.save_to_disk,
-        batch_size=config.batch_size,
-        output_dir=config.output_dir,
-        retry_limit=config.retry_limit,
-    )
+
+    scraper = TelegramScraper(creds=creds, **config["TelegramScraper"])
     scraper.run()
-    # a = asyncio.run(scraper.run())
-    # print(a.keys())
