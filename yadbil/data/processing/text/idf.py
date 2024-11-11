@@ -3,6 +3,7 @@ from collections import defaultdict
 import numpy as np
 
 
+# TODO: move somewhere
 def calculate_idf(posts, words_key="stemmed_words", min_max_scale=False):
     """Calculates the inverse document frequency (IDF) for each stemmed word.
 
