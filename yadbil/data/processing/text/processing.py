@@ -118,3 +118,12 @@ class TextProcessor:
                     item = json.loads(line)
                     item["processed_text"] = self.process_text(item[self.column_to_process])
                     out_file.write(json.dumps(item, ensure_ascii=False) + "\n")
+
+
+if __name__ == "__main__":
+    from yadbil.pipeline.config import PipelineConfig
+
+    config = PipelineConfig()
+
+    processor = TextProcessor(config["TextProcessor"])
+    processor.run()
