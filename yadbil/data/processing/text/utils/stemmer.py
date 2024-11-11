@@ -3,7 +3,7 @@ from typing import Tuple
 import nltk
 from nltk.stem import SnowballStemmer
 
-from yadbil.data.text.language import detect_language
+from yadbil.data.processing.text.utils.language import detect_language
 
 
 nltk.download("punkt")
