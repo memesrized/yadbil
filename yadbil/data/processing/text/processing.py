@@ -87,18 +87,20 @@ class TextProcessor:
         if self.remove_stopwords:
             words = self.stopword_remover.remove(words)
 
+        result = {
+            "words": words,
+        }
+
+        # TODO: do we need to ensure the same order of stemmed words?
+        # well, it should be with dict in latest python versions, but still
+        # idk about .values() method
         if self.do_stemming:
             stemmed_dict = {word: self.stemmer.stem(word) for word in words}
             stemmed_to_orig_dict = {
                 v: [k for k, vv in stemmed_dict.items() if vv == v] for v in set(stemmed_dict.values())
             }
-            stemmed_words = set(stemmed_dict.values())
 
-        result = {
-            "words": words,
-        }
-        if self.do_stemming:
-            result["stemmed_words"] = list(stemmed_words)
+            result["stemmed_words"] = list(stemmed_dict.values())
             result["words_to_stemmed"] = stemmed_dict
             result["stemmed_to_words"] = stemmed_to_orig_dict
 
