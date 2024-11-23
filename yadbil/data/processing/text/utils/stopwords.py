@@ -1,12 +1,12 @@
 from typing import List, Tuple
 
-import nltk
 from nltk.corpus import stopwords
 from stop_words import get_stop_words
 
+from yadbil.data.processing.text.utils.load import load_nltk_data
 
-nltk.download("punkt")
-nltk.download("stopwords")
+
+load_nltk_data()
 
 
 class MultilingualStopwordRemover:
@@ -14,7 +14,7 @@ class MultilingualStopwordRemover:
         self.stop_words = set()
         for language in languages:
             self.stop_words.update(get_stop_words(language))
-            self.stop_words.update(stopwords.words(language))
+            self.stop_words.update(list(stopwords.words(language)))
 
     def remove(self, words: List[str]) -> List[str]:
         return [word for word in words if word not in self.stop_words]

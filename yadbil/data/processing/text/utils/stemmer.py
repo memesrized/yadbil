@@ -1,13 +1,12 @@
 from typing import Tuple
 
-import nltk
 from nltk.stem import SnowballStemmer
 
 from yadbil.data.processing.text.utils.language import detect_language
+from yadbil.data.processing.text.utils.load import load_nltk_data
 
 
-nltk.download("punkt")
-nltk.download("stopwords")
+load_nltk_data()
 
 
 class MultilingualStemmer:
