@@ -79,8 +79,8 @@ class TelegramDataProcessor:
                                 file_out.write(json.dumps(res, ensure_ascii=False))
                                 file_out.write("\n")
                             except Exception as e:
-                                print(e)
-                                print(line)
+                                logger.error(e)
+                                logger.info(line)
                                 raise e
         logger.info("Finished processing")
         logger.info(f"Saving all_channels.jsonl at {self.output_dir}")
