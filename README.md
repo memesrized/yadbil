@@ -18,13 +18,13 @@ cd yadbil
 pip install -e .
 ```
 
-## How to run pipeline
+## How to use
 1. Set all parameters and credentials
     1. Specify env variables as in `.env_example`
         - `API_HASH` and `API_ID` - [instruction](https://docs.telethon.dev/en/stable/basic/signing-in.html)
             - be aware of this [ToS part](https://docs.telethon.dev/en/stable/basic/next-steps.html#a-note-on-developing-applications)
     2. Adjust config: `configs/pipeline.yml`
-2. Run
+2. Run pipeline
     1. as python scripts from config
         1. `python yadbil/run/pipeline.py --config_path configs/pipeline.yml`
     2. as bash script from default config path config
@@ -32,6 +32,9 @@ pip install -e .
         2. Run the script `./scripts/tg_scraping.sh`
     3. as custom python script
         1. check `examples/run_tg_pipe_sync.py` for example
+3. Run ui (only bm25 currently)
+    1. change config `configs/ui.yml`
+    2. run streamlit ui `streamlit run yadbil/ui/bm25.py`
 
 
 ## Development

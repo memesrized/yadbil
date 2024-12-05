@@ -70,3 +70,14 @@
     remove_stopwords: true
     do_stemming: true
     min_word_length: 2
+
+- name: BM25
+  parameters:
+    input_path: "data/tg_data/processed/all_channels.jsonl"
+    output_path: "data/tg_data/bm25/"
+    record_processed_data_key_list: ["processed_text", "stemmed_words"]
+    bm25_params:
+      k1: 1.5
+      b: 0.75
+      delta: 0.5
+      method: "lucene"

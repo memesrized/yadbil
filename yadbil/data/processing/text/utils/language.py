@@ -1,10 +1,9 @@
 from typing import Dict, Optional, Set, Tuple
 
-import nltk
+from yadbil.data.processing.text.utils.load import load_nltk_data
 
 
-nltk.download("punkt")
-nltk.download("stopwords")
+load_nltk_data()
 
 # Define character sets for different languages
 LANGUAGE_CHARS: Dict[str, Set[str]] = {
