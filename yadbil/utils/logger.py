@@ -8,6 +8,13 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# Configure root logger, otherwise gensim logger doesn't work
+logging.basicConfig(
+    level=logging.INFO,
+    format="[%(asctime)s] %(levelname)s [%(name)s] %(message)s",
+    handlers=[logging.StreamHandler(sys.stdout)],
+)
+
 
 def get_logger(name: str = "yadbil", level: Optional[int] = None, log_format: Optional[str] = None) -> logging.Logger:
     """
