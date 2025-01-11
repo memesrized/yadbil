@@ -4,8 +4,11 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 import bm25s
 
+from yadbil.search.base import BaseSearch
+from yadbil.utils.data_handling import get_dict_field
 
-class BM25:
+
+class BM25(BaseSearch):
     def __init__(
         self,
         input_path: Union[str, Path] = None,
@@ -34,13 +37,6 @@ class BM25:
     def save(self):
         self.retriever.save(self.output_path)
 
-    # TODO: I must rework this
-    # it should be hardcoded path or idk what, how to make it flexible and unified
-    def get_text_field(self, record: Dict[str, Any]) -> str:
-        for x in self.record_processed_data_key_list:
-            record = record[x]
-        return record
-
     def run(self, data: Optional[List[List[str]]] = None):
         self.output_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -56,7 +52,7 @@ class BM25:
             with open(self.input_path, "r") as f:
                 data = [json.loads(line) for line in f]
 
-        data = [self.get_text_field(x) for x in data]
+        data = [get_dict_field(x, self.record_processed_data_key_list) for x in data]
 
         self.retriever.index(data)
         self.save()
@@ -71,5 +67,5 @@ if __name__ == "__main__":
 
     config = PipelineConfig()
 
-    processor = BM25(config["TextProcessor"])
+    processor = BM25(config["BM25"])
     processor.run()

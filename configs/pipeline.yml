@@ -44,7 +44,7 @@
         "tagir_analyzes",
         "abstractDL"
     ]
-    output_dir: "data/tg_data/channels"
+    output_dir: "data/tg_data/scraped"
     save_to_disk: true
     batch_size: 200
     retry_limit: 5
@@ -53,7 +53,7 @@
   parameters:
     channels_info_dir: "data/tg_data/meta"
     output_dir: "data/tg_data/clean"
-    input_dir: "data/tg_data/channels"
+    input_dir: "data/tg_data/scraped"
 
 - name: TextProcessor
   parameters:
@@ -71,13 +71,27 @@
     do_stemming: true
     min_word_length: 2
 
-- name: BM25
+# - name: BM25
+#   parameters:
+#     input_path: "data/tg_data/filtered/all_channels.jsonl"
+#     output_path: "data/tg_data/bm25/"
+#     record_processed_data_key_list: ["processed_text", "stemmed_words"]
+#     bm25_params:
+#       k1: 1.5
+#       b: 0.75
+#       delta: 0.5
+#       method: "lucene"
+
+- name: Word2VecWrapper
   parameters:
-    input_path: "data/tg_data/processed/all_channels.jsonl"
-    output_path: "data/tg_data/bm25/"
+    input_path: "data/tg_data/filtered/all_channels.jsonl"
+    output_path: "data/tg_data/w2v/"
     record_processed_data_key_list: ["processed_text", "stemmed_words"]
-    bm25_params:
-      k1: 1.5
-      b: 0.75
-      delta: 0.5
-      method: "lucene"
+
+
+# - name: FastTextWrapper
+#   parameters:
+#     input_path: "data/tg_data/filtered/all_channels.jsonl"
+#     output_path: "data/tg_data/fasttext/"
+#     record_processed_data_key_list: ["processed_text", "words"]
+#     # pretrained_emb_model_path: "data/214/model.model"
