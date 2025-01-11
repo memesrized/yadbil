@@ -71,6 +71,16 @@
     do_stemming: true
     min_word_length: 2
 
+- name: DataFilter
+  parameters: 
+    input_path: "data/tg_data/processed/all_channels.jsonl"
+    output_path: "data/tg_data/filtered/all_channels.jsonl"
+    filters: 
+      - name: "min_len"
+        keys: ["processed_text", "stemmed_words"]
+        value: 1
+        bool_to_retain: true
+
 # - name: BM25
 #   parameters:
 #     input_path: "data/tg_data/filtered/all_channels.jsonl"
