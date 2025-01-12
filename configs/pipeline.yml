@@ -20,7 +20,30 @@
         "ai_machinelearning_big_data",
         "opendatascience",
         "tagir_analyzes",
-        "abstractDL"
+        "abstractDL",
+        "boris_again",
+        "black_samorez_channel",
+        "blog_toxa",
+        "machinelearning_ru",
+        "llm_under_hood",
+        "cryptovalerii",
+        "nadlskom",
+        "stuffyNLP",
+        "nlpcoreteam",
+        "dl_stories",
+        "ruadaptnaya",
+        "mltochka",
+        "nlpwanderer",
+        "izolenta_mebiusa",
+        "neural_network_engineering",
+        "derplearning",
+        "tech_priestess",
+        "dealerAI",
+        "gradientdip",
+        "machinelearning_interview",
+        "data_analysis_ml",
+        "dlinnlp",
+        "mishin_learning"
     ]
     output_dir: "data/tg_data/meta"
   
@@ -42,7 +65,30 @@
         "ai_machinelearning_big_data",
         "opendatascience",
         "tagir_analyzes",
-        "abstractDL"
+        "abstractDL",
+        "boris_again",
+        "black_samorez_channel",
+        "blog_toxa",
+        "machinelearning_ru",
+        "llm_under_hood",
+        "cryptovalerii",
+        "nadlskom",
+        "stuffyNLP",
+        "nlpcoreteam",
+        "dl_stories",
+        "ruadaptnaya",
+        "mltochka",
+        "nlpwanderer",
+        "izolenta_mebiusa",
+        "neural_network_engineering",
+        "derplearning",
+        "tech_priestess",
+        "dealerAI",
+        "gradientdip",
+        "machinelearning_interview",
+        "data_analysis_ml",
+        "dlinnlp",
+        "mishin_learning"
     ]
     output_dir: "data/tg_data/scraped"
     save_to_disk: true
@@ -52,8 +98,8 @@
 - name: TelegramDataProcessor
   parameters:
     channels_info_dir: "data/tg_data/meta"
-    output_dir: "data/tg_data/clean"
     input_dir: "data/tg_data/scraped"
+    output_dir: "data/tg_data/clean"
 
 - name: TextProcessor
   parameters:
