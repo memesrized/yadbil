@@ -29,7 +29,7 @@ class TelegramChannelInfoParser(TelegramAsync):
         logger.info("Fetching channels info")
         async with TelegramInfoFetcher(self.creds) as fetcher:
             # TODO: double check if this needed
-            identifiers = ["@" + x for x in self.channels]
+            identifiers = ["@" + x if isinstance(x, str) else x for x in self.channels]
 
             tasks = [fetcher.get_entity_info(identifier) for identifier in identifiers]
             self.res = await asyncio.gather(*tasks)

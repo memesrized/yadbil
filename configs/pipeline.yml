@@ -43,7 +43,15 @@
         "machinelearning_interview",
         "data_analysis_ml",
         "dlinnlp",
-        "mishin_learning"
+        "mishin_learning",
+        "ohmydataengineer",
+        "dsproglib",
+        "denissexy",
+        "doomgrad",
+        "def_model_train",
+        "towards_nlp",
+        "quant_prune_distill",
+        "smalldatascience"
     ]
     output_dir: "data/tg_data/meta"
   
@@ -88,7 +96,15 @@
         "machinelearning_interview",
         "data_analysis_ml",
         "dlinnlp",
-        "mishin_learning"
+        "mishin_learning",
+        "ohmydataengineer",
+        "dsproglib",
+        "denissexy",
+        "doomgrad",
+        "def_model_train",
+        "towards_nlp",
+        "quant_prune_distill",
+        "smalldatascience"
     ]
     output_dir: "data/tg_data/scraped"
     save_to_disk: true
