@@ -2,6 +2,9 @@
 /data/
 session.session
 
+# IDE
+.vscode/
+
 # OS related ignore
 .DS_Store
 
