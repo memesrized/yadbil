@@ -9,11 +9,12 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Configure root logger, otherwise gensim logger doesn't work
-logging.basicConfig(
-    level=logging.INFO,
-    format="[%(asctime)s] %(levelname)s [%(name)s] %(message)s",
-    handlers=[logging.StreamHandler(sys.stdout)],
-)
+if not logging.getLogger().hasHandlers():
+    logging.basicConfig(
+        level=logging.INFO,
+        format="[%(asctime)s] %(levelname)s [%(name)s] %(message)s",
+        handlers=[logging.StreamHandler(sys.stdout)],
+    )
 
 
 def get_logger(name: str = "yadbil", level: Optional[int] = None, log_format: Optional[str] = None) -> logging.Logger:
@@ -39,16 +40,17 @@ def get_logger(name: str = "yadbil", level: Optional[int] = None, log_format: Op
     logger = logging.getLogger(name)
     logger.setLevel(level)
 
-    # Create console handler
-    handler = logging.StreamHandler(sys.stdout)
-    handler.setLevel(level)
+    # Check if the logger already has handlers to avoid adding them multiple times
+    if not logger.hasHandlers():
+        # Create console handler
+        handler = logging.StreamHandler(sys.stdout)
+        handler.setLevel(level)
 
-    # Create formatter
-    formatter = logging.Formatter(log_format)
-    handler.setFormatter(formatter)
+        # Create formatter
+        formatter = logging.Formatter(log_format)
+        handler.setFormatter(formatter)
 
-    # Add handler to logger if it doesn't already exist
-    if not logger.handlers:
+        # Add handler to the logger
         logger.addHandler(handler)
 
     return logger
