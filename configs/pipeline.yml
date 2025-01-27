@@ -51,7 +51,8 @@
         "def_model_train",
         "towards_nlp",
         "quant_prune_distill",
-        "smalldatascience"
+        "smalldatascience",
+        "neural_info"
     ]
     output_dir: "data/tg_data/meta"
   
@@ -104,7 +105,8 @@
         "def_model_train",
         "towards_nlp",
         "quant_prune_distill",
-        "smalldatascience"
+        "smalldatascience",
+        'neural_info'
     ]
     output_dir: "data/tg_data/scraped"
     save_to_disk: true

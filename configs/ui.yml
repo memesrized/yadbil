@@ -1,3 +1,4 @@
 CONFIG_PATH: "configs/pipeline.yml"  # Path to the pipeline configuration file
 DEFAULT_NUM_RECOMMENDATIONS: 10
 MAX_NUM_RECOMMENDATIONS: 20
+TG_POST_HEIGHT: 400

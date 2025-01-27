@@ -1,87 +1,115 @@
-import json
-from pathlib import Path
+from time import perf_counter
 
 import streamlit as st
 import streamlit.components.v1 as components
-import yaml
 
-from yadbil.data.processing.text.processing import TextProcessor
-from yadbil.pipeline.config import PipelineConfig
-from yadbil.search.word2vec import Word2VecWrapper
+from yadbil.ui.utils.search import (
+    UISessionState,
+    load_configs,
+    load_data,
+    load_embeddings,
+    load_text_processor,
+)
 from yadbil.ui.utils.st_utils import tg_html
+from yadbil.utils.logger import get_logger
 
 
-# TODO: rework this mess with session state
-if "ui_config" not in st.session_state:
-    # TODO: check how to parametrize streamlit app
-    with open("configs/ui.yml") as file:
-        st.session_state.ui_config = yaml.safe_load(file)
+logger = get_logger(__name__, level="DEBUG")
 
-ui_config = st.session_state.ui_config
+logger.debug("New run")
+t0 = perf_counter()
 
-# Configuration Parameters
-CONFIG_PATH = Path(ui_config["CONFIG_PATH"])
 
-if "config" not in st.session_state:
-    st.session_state.config = PipelineConfig(CONFIG_PATH)
-config = st.session_state.config
+if "state" not in st.session_state:
+    st.session_state.state = UISessionState()
 
-if "text_processor" not in st.session_state:
-    st.session_state.text_processor = TextProcessor(**config["TextProcessor"])
+# just to make it easier to access
+state = st.session_state.state
 
-if "w2v" not in st.session_state:
-    st.session_state.w2v = Word2VecWrapper.load(
-        pretrained_emb_model_path=config["Word2VecWrapper"].get(
-            "emb_model_path", config["Word2VecWrapper"]["output_path"] + "/model.kv"
-        ),
-        data_path=config["Word2VecWrapper"]["output_path"] + "/emb_table.npy",
-    )
+logger.debug(f"Time to load: {perf_counter() - t0}")
+t0 = perf_counter()
 
-if "data" not in st.session_state:
-    with open(config["Word2VecWrapper"]["input_path"]) as file:
-        st.session_state.data = [json.loads(line) for line in file]
-data = st.session_state.data
 
-# Streamlit UI layout
+ui_config, config = load_configs()
+logger.debug(f"Time to load config: {perf_counter() - t0}")
+t0 = perf_counter()
+
+data = load_data(config["Word2VecWrapper"]["input_path"])
+logger.debug(f"Time to load data: {perf_counter() - t0}")
+t0 = perf_counter()
+
+emb = load_embeddings(config["Word2VecWrapper"], "Word2VecWrapper")
+logger.debug(f"Time to load emb: {perf_counter() - t0}")
+t0 = perf_counter()
+
+text_processor = load_text_processor(config["TextProcessor"])
+logger.debug(f"Time to text processor: {perf_counter() - t0}")
+t0 = perf_counter()
+
+
+# APP
 st.title("Post Search System")
 
-# Sidebar for inputs
+# INPUTS
 with st.sidebar:
     st.header("Input Parameters")
-
-    query = st.text_input("Query")
-    if query:
-        query = st.session_state.text_processor.process_text(query)
-        query = query[st.session_state.w2v.record_processed_data_key_list[-1]]
+    with st.form("input"):
+        query = st.text_input("Query")  # value=state.query won't work here
         top_n = st.number_input(
             "Number of search results",
             min_value=1,
             max_value=ui_config["MAX_NUM_RECOMMENDATIONS"],
             value=ui_config["DEFAULT_NUM_RECOMMENDATIONS"],
         )
+        button = st.form_submit_button("Find Similar Posts")
 
-        results, scores = st.session_state.w2v.query(query, n=top_n)
-        st.markdown("### Processed query:")
-        st.markdown(query)
-    button = st.button("Find Similar Posts")
+logger.debug(f"Time to draw sidebar: {perf_counter() - t0}")
+t0 = perf_counter()
 
-
-# Main area for output
+# PROCESSING BUTTON
 if button:
-    similar_posts = [data[i] for i in results]
+    if query:
+        processed_query = text_processor.process_text(query)
+        processed_query = processed_query[emb.record_processed_data_key_list[-1]]
+        results, scores = emb.query(processed_query, n=top_n)
 
-    if similar_posts:
-        for i, post in enumerate(similar_posts):
-            if scores[i] <= 0:
-                continue
-            st.markdown("### Post ID: " + str(post["id"]))
-            st.markdown("#### Similarity Score: " + f"{scores[i]:.4f}")
-            with st.expander("text"):
-                st.markdown(post["orig_text"])
-            with st.expander("post"):
-                # TODO: try to add scroll into html
-                components.html(tg_html(post["channel"], str(post["id"])), height=800)
+        state = UISessionState(
+            similar_posts=[data[i] for i in results],
+            scores=scores,
+            results=results,
+            query=query,
+            processed_query=processed_query,
+        )
+        st.session_state.state = state
 
-            st.markdown("---")  # Line to separate different posts
-    else:
-        st.write("No similar posts found.")
+logger.debug(f"Time to process query: {perf_counter() - t0}")
+t0 = perf_counter()
+
+# DISPLAY QUERY
+with st.sidebar:
+    st.markdown("### Processed query:")
+    st.markdown(state.processed_query)
+    st.markdown("### Query:")
+    st.markdown(state.query)
+
+
+# DISPLAY RESULTS
+if state.similar_posts:
+    for i, post in enumerate(state.similar_posts):
+        st.markdown(f"### Similarity Score: {state.scores[i]:.4f}")
+        st.markdown(f"Post: https://t.me/{str(post['channel'])}/{str(post['id'])}")
+        with st.expander("text"):
+            st.markdown(post["orig_text"])
+        with st.expander("Embedded post"):
+            # TODO: how to make height dynamic?
+            components.html(
+                tg_html(post["channel"], str(post["id"])),
+                height=ui_config["TG_POST_HEIGHT"],
+                scrolling=True,
+            )
+        st.markdown("---")  # Line to separate different posts
+else:
+    st.write("No similar posts found.")
+
+logger.debug(f"Time to display results: {perf_counter() - t0}")
+logger.debug("End of run")
