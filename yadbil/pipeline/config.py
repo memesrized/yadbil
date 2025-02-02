@@ -27,9 +27,10 @@ class PipelineConfig:
             else:
                 raise ValueError(f"Unsupported file format: {suffix}. Use .yml, .yaml, or .json")
 
-        self.order = [item["name"] for item in raw_config]
+        steps = raw_config["steps"]
+        self.order = [item["name"] for item in steps]
         # Convert list of dicts to dict with name as key
-        self.config = {item["name"]: item["parameters"] for item in raw_config}
+        self.config = {item["name"]: item["parameters"] for item in steps}
 
     def __getitem__(self, key: str) -> Dict[str, Any]:
         """Allow dictionary-style access to configuration."""
@@ -42,3 +43,14 @@ class PipelineConfig:
     def __contains__(self, key: str) -> bool:
         """Enable 'in' operator for config."""
         return key in self.config
+
+    def __str__(self) -> str:
+        """Return a string representation of the pipeline configuration."""
+        pipeline_str = f"Pipeline Configuration (path: {self.config_path})\n"
+        pipeline_str += f"Execution order: {' -> '.join(self.order)}\n"
+        pipeline_str += "Step configurations:\n"
+        for step in self.order:
+            pipeline_str += f"  {step}:\n"
+            for param, value in self.config[step].items():
+                pipeline_str += f"    {param}: {value}\n"
+        return pipeline_str

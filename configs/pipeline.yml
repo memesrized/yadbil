@@ -2,64 +2,8 @@
 # TODO: work on the way to pass the data between the steps easily,
 # i.e. proper naming for output/input and pass through data between steps
 
-- name: TelegramChannelInfoParser
-  parameters:
-    creds: TelegramCreds
-    channels: [
-        "ai_newz",
-        "lovedeathtransformers",
-        "new_yorko_times",
-        "partially_unsupervised",
-        "fminxyz",
-        "epsiloncorrect",
-        "knowledge_accumulator",
-        "rybolos_channel",
-        "gonzo_ML",
-        "seeallochnaya",
-        "senior_augur",
-        "ai_machinelearning_big_data",
-        "opendatascience",
-        "tagir_analyzes",
-        "abstractDL",
-        "boris_again",
-        "black_samorez_channel",
-        "blog_toxa",
-        "machinelearning_ru",
-        "llm_under_hood",
-        "cryptovalerii",
-        "nadlskom",
-        "stuffyNLP",
-        "nlpcoreteam",
-        "dl_stories",
-        "ruadaptnaya",
-        "mltochka",
-        "nlpwanderer",
-        "izolenta_mebiusa",
-        "neural_network_engineering",
-        "derplearning",
-        "tech_priestess",
-        "dealerAI",
-        "gradientdip",
-        "machinelearning_interview",
-        "data_analysis_ml",
-        "dlinnlp",
-        "mishin_learning",
-        "ohmydataengineer",
-        "dsproglib",
-        "denissexy",
-        "doomgrad",
-        "def_model_train",
-        "towards_nlp",
-        "quant_prune_distill",
-        "smalldatascience",
-        "neural_info"
-    ]
-    output_dir: "data/tg_data/meta"
-  
-- name: TelegramScraper
-  parameters:
-    creds: TelegramCreds
-    channels: [
+common:
+  telegram_channels: &telegram_channels [
         "ai_newz",
         "lovedeathtransformers",
         "new_yorko_times",
@@ -108,64 +52,75 @@
         "smalldatascience",
         'neural_info'
     ]
-    output_dir: "data/tg_data/scraped"
-    save_to_disk: true
-    batch_size: 200
-    retry_limit: 5
 
-- name: TelegramDataProcessor
-  parameters:
-    channels_info_dir: "data/tg_data/meta"
-    input_dir: "data/tg_data/scraped"
-    output_dir: "data/tg_data/clean"
+steps:
+  - name: TelegramChannelInfoParser
+    parameters:
+      creds: TelegramCreds
+      channels: *telegram_channels
+      output_dir: "data/tg_data_test/meta"
+  
+  - name: TelegramScraper
+    parameters:
+      batch_size: 200
+      retry_limit: 5
+      save_to_disk: true
+      creds: TelegramCreds
+      channels: *telegram_channels
+      output_dir: "data/tg_data_test/scraped"
 
-- name: TextProcessor
-  parameters:
-    input_path: "data/tg_data/clean/all_channels.jsonl"
-    output_path: "data/tg_data/processed/all_channels.jsonl"
-    split_into_words: true
-    email_replacement_str: null
-    url_replacement_str: null
-    column_to_process: "text_no_links"
-    languages: 
-      - "russian"
-      - "english"
-    to_lower: true
-    remove_stopwords: true
-    do_stemming: true
-    min_word_length: 2
+  - name: TelegramDataProcessor
+    parameters:
+      channels_info_dir: "data/tg_data_test/meta"
+      input_dir: "data/tg_data_test/scraped"
+      output_dir: "data/tg_data_test/clean"
 
-- name: DataFilter
-  parameters: 
-    input_path: "data/tg_data/processed/all_channels.jsonl"
-    output_path: "data/tg_data/filtered/all_channels.jsonl"
-    filters: 
-      - name: "min_len"
-        keys: ["processed_text", "stemmed_words"]
-        value: 1
-        bool_to_retain: true
+  - name: TextProcessor
+    parameters:
+      input_path: "data/tg_data_test/clean/all_channels.jsonl"
+      output_path: "data/tg_data_test/processed/all_channels.jsonl"
+      split_into_words: true
+      email_replacement_str: null
+      url_replacement_str: null
+      column_to_process: "text_no_links"
+      languages: 
+        - "russian"
+        - "english"
+      to_lower: true
+      remove_stopwords: true
+      do_stemming: true
+      min_word_length: 2
 
-# - name: BM25
-#   parameters:
-#     input_path: "data/tg_data/filtered/all_channels.jsonl"
-#     output_path: "data/tg_data/bm25/"
-#     record_processed_data_key_list: ["processed_text", "stemmed_words"]
-#     bm25_params:
-#       k1: 1.5
-#       b: 0.75
-#       delta: 0.5
-#       method: "lucene"
+  - name: DataFilter
+    parameters: 
+      input_path: "data/tg_data_test/processed/all_channels.jsonl"
+      output_path: "data/tg_data_test/filtered/all_channels.jsonl"
+      filters: 
+        - name: "min_len"
+          keys: ["processed_text", "stemmed_words"]
+          value: 1
+          bool_to_retain: true
 
-- name: Word2VecWrapper
-  parameters:
-    input_path: "data/tg_data/filtered/all_channels.jsonl"
-    output_path: "data/tg_data/w2v/"
-    record_processed_data_key_list: ["processed_text", "stemmed_words"]
+  # - name: BM25
+  #   parameters:
+  #     input_path: "data/tg_data_test/filtered/all_channels.jsonl"
+  #     output_path: "data/tg_data_test/bm25/"
+  #     record_processed_data_key_list: ["processed_text", "stemmed_words"]
+  #     bm25_params:
+  #       k1: 1.5
+  #       b: 0.75
+  #       delta: 0.5
+  #       method: "lucene"
 
+  - name: Word2VecWrapper
+    parameters:
+      input_path: "data/tg_data_test/filtered/all_channels.jsonl"
+      output_path: "data/tg_data_test/w2v/"
+      record_processed_data_key_list: ["processed_text", "stemmed_words"]
 
-# - name: FastTextWrapper
-#   parameters:
-#     input_path: "data/tg_data/filtered/all_channels.jsonl"
-#     output_path: "data/tg_data/fasttext/"
-#     record_processed_data_key_list: ["processed_text", "words"]
-#     # pretrained_emb_model_path: "data/214/model.model"
+  # - name: FastTextWrapper
+  #   parameters:
+  #     input_path: "data/tg_data_test/filtered/all_channels.jsonl"
+  #     output_path: "data/tg_data_test/fasttext/"
+  #     record_processed_data_key_list: ["processed_text", "words"]
+  #     # pretrained_emb_model_path: "data/214/model.model"

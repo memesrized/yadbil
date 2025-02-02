@@ -27,6 +27,7 @@ class Pipeline:
     @classmethod
     def from_config(cls, config: Union[str, dict, Path]):
         config = PipelineConfig(config)
+        logger.info("Pipeline config:" + str(config))
         steps = []
         for x in config.order:
             if x in STEPS_MAPPING:
