@@ -1,1 +1,1 @@
-python yadbil/pipeline/pipeline.py --config_path configs/pipeline.yml
+python yadbil/run/pipeline.py --config_path configs/pipeline.yml
