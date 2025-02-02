@@ -111,8 +111,7 @@ class BaseWordEmbeddingSearch(BaseEmbeddingSearch, ABC):
         if model_params:
             self.model_params = model_params
 
-        if record_processed_data_key_list:
-            self.record_processed_data_key_list = record_processed_data_key_list
+        self.record_processed_data_key_list = record_processed_data_key_list or self._record_processed_data_key_list
 
         if pretrained_emb_model_path is not None:
             self.embeddings = self.KeyedVectorsClass.load(pretrained_emb_model_path)
@@ -135,7 +134,7 @@ class BaseWordEmbeddingSearch(BaseEmbeddingSearch, ABC):
 
     @property
     @abstractmethod
-    def record_processed_data_key_list(self) -> list[str]:
+    def _record_processed_data_key_list(self) -> list[str]:
         pass
 
     @property
