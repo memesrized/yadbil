@@ -22,7 +22,7 @@ class FastTextWrapper(BaseWordEmbeddingSearch):
         return FastText
 
     @property
-    def record_processed_data_key_list(self) -> list[str]:
+    def _record_processed_data_key_list(self) -> list[str]:
         return ["processed_text", "words"]
 
     @classmethod

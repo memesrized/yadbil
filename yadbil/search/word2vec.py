@@ -23,7 +23,7 @@ class Word2VecWrapper(BaseWordEmbeddingSearch):
         return Word2Vec
 
     @property
-    def record_processed_data_key_list(self) -> list[str]:
+    def _record_processed_data_key_list(self) -> list[str]:
         return ["processed_text", "stemmed_words"]
 
     @classmethod
