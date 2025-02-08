@@ -50,7 +50,7 @@ class OpenAISearch(BaseEmbeddingSearch):
         self.input_path = Path(input_path) if input_path else None
         self.output_path = Path(output_path) if output_path else None
         self.record_processed_data_key_list = record_processed_data_key_list or ["orig_text"]
-        self.embedder = Embedder(api_key=creds["api_key"], model=model)
+        self.embedder = Embedder(api_key=creds.api_key, model=model)
         self.emb_table = None
         self.is_pretrained = True  # OpenAI models are always pretrained
 

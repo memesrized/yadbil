@@ -1,15 +1,20 @@
-import json
 from pathlib import Path
 from typing import Optional, Union
 
 import numpy as np
 from pinecone import ServerlessSpec
 from pinecone.core.openapi.data.model.scored_vector import ScoredVector
-from pinecone.grpc import PineconeGRPC as Pinecone
 
+from yadbil.pipeline.config import PipelineConfig
 from yadbil.pipeline.creds import PineconeCreds
 from yadbil.search.base import BaseSearch
 from yadbil.utils.logger import get_logger
+
+
+try:
+    from pinecone.grpc import PineconeGRPC as Pinecone
+except ImportError:
+    from pinecone import Pinecone
 
 
 logger = get_logger(__name__)
@@ -20,7 +25,7 @@ class PineconeSearch(BaseSearch):
         self,
         input_path: Union[str, Path] = None,
         index_name: str = "embeddings",
-        dimension: int = 3072,
+        dimension: int = 1536,
         metric: str = "cosine",
         creds: PineconeCreds = None,
         namespace: str = "yadbil",
@@ -40,34 +45,39 @@ class PineconeSearch(BaseSearch):
         self.host = host
         self.index = None
         self.pc = Pinecone(api_key=creds.api_key)
+        if self.index_name in self._list_indexes_to_names():
+            self.index = self.pc.Index(host=self.host) if self.host else self.pc.Index(name=self.index_name)
 
+    def _list_indexes_to_names(self):
+        """List all indexes in Pinecone."""
+        indexes = self.pc.list_indexes()
+        return [x["name"] for x in indexes]
+
+    # TODO: rework
     @classmethod
-    def load(cls, path: str) -> "PineconeSearch":
+    def load(cls, config_path: str) -> "PineconeSearch":
         """Load configuration from JSON file and initialize connection.
 
         Args:
-            path: Path to JSON config file containing Pinecone parameters
+            config_path: Path to yaml pipeline config file containing Pinecone parameters
 
         Returns:
             Initialized PineconeSearch instance ready for querying
         """
-        with open(path, "r") as f:
-            config = json.load(f)
+        config = PipelineConfig(config_path)
+        config["PineconeSearch"]["creds"] = PineconeCreds()
         instance = cls(**config)
-        # TODO: move to init with if and remove?
-        instance.index = (
-            instance.pc.Index(host=instance.host) if instance.host else instance.pc.Index(name=instance.index_name)
-        )
         return instance
 
     def save(self) -> None:
         """Nothing to save as data is stored in Pinecone."""
         pass
 
+    # TODO: rework to return index instead or set it????
     def _init_index(self):
         """Initialize Pinecone index if not already done."""
         if self.index is None:
-            if self.index_name not in self.pc.list_indexes():
+            if self.index_name not in self._list_indexes_to_names():
                 logger.info(f"Creating index: {self.index_name}")
                 self.pc.create_index(
                     name=self.index_name,
@@ -82,11 +92,17 @@ class PineconeSearch(BaseSearch):
             # Use host if provided, otherwise use index_name
             self.index = self.pc.Index(host=self.host) if self.host else self.pc.Index(name=self.index_name)
 
-    def query(self, query: np.ndarray, n: int = 10, filter: Optional[dict] = None) -> list[ScoredVector]:
+    def query(
+        self,
+        query_vector: Union[np.ndarray, list],
+        n: int = 10,
+        filter: Optional[dict] = None,
+        include_values: bool = True,
+    ) -> list[ScoredVector]:
         """Query Pinecone index with vector.
 
         Args:
-            query: Query vector
+            query_vector: Query vector
             n: Number of results to return
             filter: Optional metadata filter dictionary
 
@@ -95,12 +111,12 @@ class PineconeSearch(BaseSearch):
         """
         response = self.index.query(
             namespace=self.namespace,
-            vector=query.tolist(),  # Convert numpy array to list
+            vector=list(query_vector),  # Convert numpy array to list
             top_k=n,
-            include_values=False,
+            include_values=include_values,
             filter=filter,
         )
-        return response.matches
+        return [x.to_dict() for x in response.matches]
 
     def run(self, data: Optional[np.ndarray] = None) -> None:
         """Store vectors in Pinecone index.
@@ -131,8 +147,6 @@ class PineconeSearch(BaseSearch):
 
 
 if __name__ == "__main__":
-    from yadbil.pipeline.config import PipelineConfig
-
     config = PipelineConfig()
 
     processor = PineconeSearch(**config["PineconeSearch"])

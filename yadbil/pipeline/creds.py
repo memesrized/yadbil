@@ -23,4 +23,4 @@ class PineconeCreds:
         self.api_key = os.getenv("PINECONE_API_KEY")
 
 
-CREDS = [TelegramCreds, OpenAICreds]
+CREDS = [TelegramCreds, OpenAICreds, PineconeCreds]
