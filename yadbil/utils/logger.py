@@ -1,6 +1,7 @@
 import logging
 import os
 import sys
+from logging.handlers import RotatingFileHandler
 from typing import Optional
 
 from dotenv import load_dotenv
@@ -17,7 +18,14 @@ if not logging.getLogger().hasHandlers():
     )
 
 
-def get_logger(name: str = "yadbil", level: Optional[int] = None, log_format: Optional[str] = None) -> logging.Logger:
+def get_logger(
+    name: str = "yadbil",
+    level: Optional[int] = None,
+    log_format: Optional[str] = None,
+    log_file: str = "pipeline.log",
+    max_bytes: int = 10 * 1024 * 1024,  # 10 MB per log file
+    backup_count: int = 3,  # keep 3 backup files
+) -> logging.Logger:
     """
     Configure and return a logger with specified settings.
 
@@ -25,6 +33,9 @@ def get_logger(name: str = "yadbil", level: Optional[int] = None, log_format: Op
         name: Logger name
         level: Logging level
         log_format: Custom log format string
+        log_file: Path to log file (default: pipeline.log)
+        max_bytes: Maximum size of each log file in bytes (default: 10 MB)
+        backup_count: Number of backup files to keep (default: 3)
 
     Returns:
         Configured logger instance
@@ -39,18 +50,25 @@ def get_logger(name: str = "yadbil", level: Optional[int] = None, log_format: Op
 
     logger = logging.getLogger(name)
     logger.setLevel(level)
+    logger.propagate = False  # prevent propagation to the root logger
 
-    # Check if the logger already has handlers to avoid adding them multiple times
-    if not logger.hasHandlers():
+    # Check if custom handlers are already set for this logger, not inherited ones.
+    if not logger.handlers:
         # Create console handler
-        handler = logging.StreamHandler(sys.stdout)
-        handler.setLevel(level)
+        console_handler = logging.StreamHandler(sys.stdout)
+        console_handler.setLevel(level)
+
+        # Use RotatingFileHandler to limit log file sizes
+        file_handler = RotatingFileHandler(log_file, maxBytes=max_bytes, backupCount=backup_count)
+        file_handler.setLevel(level)
 
         # Create formatter
         formatter = logging.Formatter(log_format)
-        handler.setFormatter(formatter)
+        console_handler.setFormatter(formatter)
+        file_handler.setFormatter(formatter)
 
-        # Add handler to the logger
-        logger.addHandler(handler)
+        # Add handlers to the logger
+        logger.addHandler(console_handler)
+        logger.addHandler(file_handler)
 
     return logger
