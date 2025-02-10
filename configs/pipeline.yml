@@ -112,11 +112,11 @@ steps:
   #       delta: 0.5
   #       method: "lucene"
 
-  - name: Word2VecWrapper
-    parameters:
-      input_path: "data/tg_data_test/filtered/all_channels.jsonl"
-      output_path: "data/tg_data_test/w2v/"
-      record_processed_data_key_list: ["processed_text", "stemmed_words"]
+  # - name: Word2VecWrapper
+  #   parameters:
+  #     input_path: "data/tg_data_test/filtered/all_channels.jsonl"
+  #     output_path: "data/tg_data_test/w2v/"
+  #     record_processed_data_key_list: ["processed_text", "stemmed_words"]
 
   # - name: FastTextWrapper
   #   parameters:
@@ -124,3 +124,28 @@ steps:
   #     output_path: "data/tg_data_test/fasttext/"
   #     record_processed_data_key_list: ["processed_text", "words"]
   #     # pretrained_emb_model_path: "data/214/model.model"
+
+  - name: OpenAISearch
+    parameters:
+      input_path: "data/tg_data_test/filtered/all_channels.jsonl"
+      output_path: "data/tg_data_test/openai/"
+      record_processed_data_key_list: ["orig_text"]
+      creds: OpenAICreds
+      model: "text-embedding-3-small"
+      batch_size: 500
+
+  - name: PineconeSearch
+    parameters:
+      input_path: "data/tg_data_test/openai/emb_table.npy"
+      input_path_data: "data/tg_data_test/filtered/all_channels.jsonl"
+      index_name: "yadbil-embeddings"
+      dimension: 1536  # Matches OpenAI text-embedding-3-small dimension
+      metric: "cosine"
+      creds: PineconeCreds
+      namespace: "yadbil"
+      cloud: "aws"
+      region: "us-east-1"
+      # WARNING: keep uid
+      data_fields: 
+        keep: ["uid", "orig_text", "link", "channel", "date"]
+      # host: null  # Optional, will use index_name if not provided

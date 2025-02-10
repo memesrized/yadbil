@@ -13,4 +13,14 @@ class TelegramCreds:
         self.phone_number = os.getenv("TELEGRAM_PHONE_NUMBER")
 
 
-CREDS = [TelegramCreds]
+class OpenAICreds:
+    def __init__(self):
+        self.api_key = os.getenv("OPENAI_API_KEY")
+
+
+class PineconeCreds:
+    def __init__(self):
+        self.api_key = os.getenv("PINECONE_API_KEY")
+
+
+CREDS = [TelegramCreds, OpenAICreds, PineconeCreds]

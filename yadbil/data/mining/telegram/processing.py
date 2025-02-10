@@ -1,6 +1,7 @@
 import json
 from collections import defaultdict
 from pathlib import Path
+from typing import Dict, Tuple
 
 from tqdm import tqdm
 
@@ -22,6 +23,11 @@ class TelegramDataProcessor:
         self.output_dir = Path(output_dir) if isinstance(output_dir, str) else output_dir
         self.input_dir = Path(input_dir) if isinstance(input_dir, str) else input_dir
 
+    def _id_to_name_and_name_to_id(self, path: Path) -> Tuple[Dict[int, str], Dict[str, int]]:
+        with open(path) as file:
+            channels_meta = json.load(file)
+        return {x["id"]: x["username"] for x in channels_meta}, {x["username"]: x["id"] for x in channels_meta}
+
     def sub_urls(self, data):
         text = data["message"]
         urls_to_replace = [
@@ -41,13 +47,22 @@ class TelegramDataProcessor:
     def keep_or_not(self, data, text_length=40):
         if data["message"] is None or len(data["message"]) < text_length:
             return False
-        if self.channels and data["fwd_from"] and data["fwd_from"].get("from_id", {}).get("id") in self.channels:
+        if (
+            self.channels_id_to_name
+            and data["fwd_from"]
+            and data["fwd_from"].get("from_id", {}).get("id") in self.channels_id_to_name
+        ):
             return False
         return True
 
     def process_record(self, data, channel):
         return {
+            "uid": f"{self.channels_name_to_id[channel]}_{data['id']}",
+            # it can use channel id, but in this case you should be a member of the channel(?)
+            # and then the link would look like https://t.me/c/{channel_id}/{data['id']}
+            "link": f"https://t.me/{channel}/{str(data['id'])}",
             "channel": channel,
+            "channel_id": self.channels_name_to_id[channel],
             "id": data["id"],
             "date": data["date"],
             "orig_text": data["message"],
@@ -61,8 +76,8 @@ class TelegramDataProcessor:
 
     def run(self):
         logger.info("Loading channels info")
-        with open(self.channels_info_path) as file:
-            self.channels = [ch["id"] for ch in json.load(file)]
+        self.channels_id_to_name, self.channels_name_to_id = self._id_to_name_and_name_to_id(self.channels_info_path)
+
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
         results = []
