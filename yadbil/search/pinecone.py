@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 from typing import Optional, Union
 
@@ -24,6 +25,7 @@ class PineconeSearch(BaseSearch):
     def __init__(
         self,
         input_path: Union[str, Path] = None,
+        input_path_data: Union[str, Path] = None,
         index_name: str = "embeddings",
         dimension: int = 1536,
         metric: str = "cosine",
@@ -34,8 +36,11 @@ class PineconeSearch(BaseSearch):
         # Use host if provided, otherwise use index_name
         # https://docs.pinecone.io/guides/data/target-an-index
         host: Optional[str] = None,
+        data_fields: Optional[dict] = None,
+        batch_size: int = 100,
     ):
         self.input_path = Path(input_path) if input_path else None
+        self.input_path_data = Path(input_path_data) if input_path_data else None
         self.index_name = index_name
         self.dimension = dimension
         self.metric = metric
@@ -47,11 +52,32 @@ class PineconeSearch(BaseSearch):
         self.pc = Pinecone(api_key=creds.api_key)
         if self.index_name in self._list_indexes_to_names():
             self.index = self.pc.Index(host=self.host) if self.host else self.pc.Index(name=self.index_name)
+        self.data_fields = data_fields
+        self.batch_size = batch_size
 
     def _list_indexes_to_names(self):
         """List all indexes in Pinecone."""
         indexes = self.pc.list_indexes()
         return [x["name"] for x in indexes]
+
+    def _load_text_data(self):
+        """Load data from input_path."""
+        if self.input_path_data is None:
+            raise ValueError("No input data provided.")
+        with open(self.input_path_data) as file:
+            data = [json.loads(line.strip()) for line in file]
+        return data
+
+    def _filter_record_fields(self, record: dict) -> dict:
+        """Filter record fields."""
+        if self.data_fields is None:
+            return record
+        elif self.data_fields["keep"]:
+            return {k: v for k, v in record.items() if k in self.data_fields["keep"]}
+        elif self.data_fields["drop"]:
+            return {k: v for k, v in record.items() if k not in self.data_fields["drop"]}
+        else:
+            raise ValueError("Invalid data_fields configuration, must specify 'keep' or 'drop'.")
 
     # TODO: rework
     @classmethod
@@ -97,7 +123,8 @@ class PineconeSearch(BaseSearch):
         query_vector: Union[np.ndarray, list],
         n: int = 10,
         filter: Optional[dict] = None,
-        include_values: bool = True,
+        include_values: bool = False,
+        include_metadata: bool = True,
     ) -> list[ScoredVector]:
         """Query Pinecone index with vector.
 
@@ -114,6 +141,7 @@ class PineconeSearch(BaseSearch):
             vector=list(query_vector),  # Convert numpy array to list
             top_k=n,
             include_values=include_values,
+            include_metadata=include_metadata,
             filter=filter,
         )
         return [x.to_dict() for x in response.matches]
@@ -133,16 +161,24 @@ class PineconeSearch(BaseSearch):
                 raise ValueError("No input data provided.")
             data = np.load(self.input_path)
 
+        records = self._load_text_data()
+        records = [self._filter_record_fields(x) for x in records]
+
         self._init_index()
 
-        # Prepare vectors with IDs
-        vectors = [(str(i), vec.tolist(), None) for i, vec in enumerate(data)]
-
-        # Upsert in batches of 100
-        batch_size = 100
-        for i in range(0, len(vectors), batch_size):
-            batch = vectors[i : i + batch_size]
+        for i in range(0, len(data), self.batch_size):
+            batch = data[i : i + self.batch_size]
+            batch_data = records[i : i + self.batch_size]
+            batch = [
+                {
+                    "id": batch_data[j]["uid"],
+                    "values": batch[j].tolist(),
+                    "metadata": batch_data[j],
+                }
+                for j in range(len(batch))
+            ]
             self.index.upsert(vectors=batch, namespace=self.namespace)
+            # TODO: improve logging
             logger.info(f"Uploaded vectors {i} to {i + len(batch)}")
 
 
