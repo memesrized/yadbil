@@ -1,0 +1,64 @@
+# TODO: add https://www.serverless.com/plugins/serverless-dotenv-plugin for convenience ?
+
+service: pinecone-lambda-serverless-gpt
+
+provider:
+  name: aws
+  runtime: python${self:custom.pythonVersion}
+  stage: ${opt:stage, 'dev'}
+  region: eu-north-1  # Stockholm, feel free to change
+  # TODO: move timeout to gateway and functions (but you actually can't increase it there)
+  timeout: 30
+  memorySize: 128
+  apiGateway:
+    # check generated key in the script output
+    apiKeys:
+      - ${self:provider.stage}-myApiKey
+    # in case you want to specify it yourself
+    # apiKeys:
+    #   - name: ${self:provider.stage}-myApiKey
+    #     value: ${env:MY_API_KEY}
+    usagePlan:
+      quota:
+        limit: 2000
+        period: MONTH
+      throttle:
+        burstLimit: 100
+        rateLimit: 60
+
+functions:
+  pinecall:
+    handler: lambdas.pinecall.handler
+    events:
+      - http:
+          path: /
+          method: post
+    environment:
+      OPENAI_API_KEY: ${env:OPENAI_API_KEY}
+      PINECONE_API_KEY: ${env:PINECONE_API_KEY}
+      PINECONE_HOST: ${env:PINECONE_HOST}
+      PINECONE_NAMESPACE: ${env:PINECONE_NAMESPACE}
+
+plugins:
+  - serverless-python-requirements
+
+custom:
+  pythonVersion: "3.12"  # reused in provider.runtime and pipCmdExtraArgs
+  pythonRequirements:
+    usePoetry: false
+    dockerizePip: false  # i don't have docker installed on my machine, but you can use it
+    # layer: true
+    fileName: requirements.txt  # it's default, but to make it explicit
+    pipCmdExtraArgs:  # hack to install libs for lambda's linux
+      - "--platform"
+      - "manylinux2014_x86_64"  # aws linux version
+      - "--implementation"
+      - "cp"  # cpython
+      - "--python-version"
+      - ${self:custom.pythonVersion}
+      - "--only-binary=:all:"  # to avoid building from source
+
+package:
+  include:
+    - lambdas/**
+    - requirements.txt

@@ -1,0 +1,2 @@
+openai==1.61.0
+pinecone==5.4.2

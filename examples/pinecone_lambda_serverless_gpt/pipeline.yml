@@ -1,0 +1,124 @@
+common:
+  telegram_channels: &telegram_channels [
+        "ai_newz",
+        "lovedeathtransformers",
+        "new_yorko_times",
+        "partially_unsupervised",
+        "fminxyz",
+        "epsiloncorrect",
+        "knowledge_accumulator",
+        "rybolos_channel",
+        "gonzo_ML",
+        "seeallochnaya",
+        "senior_augur",
+        "ai_machinelearning_big_data",
+        "opendatascience",
+        "tagir_analyzes",
+        "abstractDL",
+        "boris_again",
+        "black_samorez_channel",
+        "blog_toxa",
+        "machinelearning_ru",
+        "llm_under_hood",
+        "cryptovalerii",
+        "nadlskom",
+        "stuffyNLP",
+        "nlpcoreteam",
+        "dl_stories",
+        "ruadaptnaya",
+        "mltochka",
+        "nlpwanderer",
+        "izolenta_mebiusa",
+        "neural_network_engineering",
+        "derplearning",
+        "tech_priestess",
+        "dealerAI",
+        "gradientdip",
+        "machinelearning_interview",
+        "data_analysis_ml",
+        "dlinnlp",
+        "mishin_learning",
+        "ohmydataengineer",
+        "dsproglib",
+        "denissexy",
+        "doomgrad",
+        "def_model_train",
+        "towards_nlp",
+        "quant_prune_distill",
+        "smalldatascience",
+        'neural_info',
+        "AGI_and_RL"
+    ]
+
+steps:
+  - name: TelegramChannelInfoParser
+    parameters:
+      creds: TelegramCreds
+      channels: *telegram_channels
+      output_dir: "data/tg_data/meta"
+  
+  - name: TelegramScraper
+    parameters:
+      batch_size: 200
+      retry_limit: 5
+      save_to_disk: true
+      creds: TelegramCreds
+      channels: *telegram_channels
+      output_dir: "data/tg_data/scraped"
+
+  - name: TelegramDataProcessor
+    parameters:
+      channels_info_dir: "data/tg_data/meta"
+      input_dir: "data/tg_data/scraped"
+      output_dir: "data/tg_data/clean"
+
+  - name: TextProcessor
+    parameters:
+      input_path: "data/tg_data/clean/all_channels.jsonl"
+      output_path: "data/tg_data/processed/all_channels.jsonl"
+      split_into_words: true
+      email_replacement_str: null
+      url_replacement_str: null
+      column_to_process: "text_no_links"
+      languages: 
+        - "russian"
+        - "english"
+      to_lower: true
+      remove_stopwords: true
+      do_stemming: true
+      min_word_length: 2
+
+  - name: DataFilter
+    parameters: 
+      input_path: "data/tg_data/processed/all_channels.jsonl"
+      output_path: "data/tg_data/filtered/all_channels.jsonl"
+      filters: 
+        - name: "min_len"
+          keys: ["processed_text", "stemmed_words"]
+          value: 1
+          bool_to_retain: true
+
+  - name: OpenAISearch
+    parameters:
+      input_path: "data/tg_data/filtered/all_channels.jsonl"
+      output_path: "data/tg_data/openai/"
+      record_processed_data_key_list: ["orig_text"]
+      creds: OpenAICreds
+      model: "text-embedding-3-small"
+      batch_size: 500
+
+  - name: PineconeSearch
+    parameters:
+      input_path: "data/tg_data/openai/emb_table.npy"
+      input_path_data: "data/tg_data/filtered/all_channels.jsonl"
+      index_name: "yadbil-embeddings"
+      dimension: 1536  # Matches OpenAI text-embedding-3-small dimension
+      metric: "cosine"
+      creds: PineconeCreds
+      namespace: "yadbil"
+      cloud: "aws"
+      region: "us-east-1"
+      # WARNING: keep uid
+      data_fields: 
+        keep: ["uid", "orig_text", "link", "channel", "date"]
+      # host: null  # Optional, will use index_name if not provided

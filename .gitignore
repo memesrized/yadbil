@@ -1,3 +1,11 @@
+# infra
+.serverless
+
+# javascript
+node_modules
+package-lock.json
+package.json
+
 # project related paths
 /data/
 session.session
